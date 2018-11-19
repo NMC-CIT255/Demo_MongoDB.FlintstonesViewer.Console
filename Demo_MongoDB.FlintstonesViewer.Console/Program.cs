@@ -35,10 +35,6 @@ namespace Demo_FileIO_NTier
                     Id = 1,
                     LastName = "Flintstone",
                     FirstName = "Fred",
-                    Address = "301 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 28,
                     Gender = Character.GenderType.MALE
                 },
@@ -47,10 +43,6 @@ namespace Demo_FileIO_NTier
                     Id = 2,
                     LastName = "Rubble",
                     FirstName = "Barney",
-                    Address = "303 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 28,
                     Gender = Character.GenderType.FEMALE
                 },
@@ -59,10 +51,6 @@ namespace Demo_FileIO_NTier
                     Id = 3,
                     LastName = "Flintstone",
                     FirstName = "Wilma",
-                    Address = "301 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 27,
                     Gender = Character.GenderType.FEMALE
                 },
@@ -71,10 +59,6 @@ namespace Demo_FileIO_NTier
                     Id = 4,
                     LastName = "Flintstone",
                     FirstName = "Pebbles",
-                    Address = "301 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 1,
                     Gender = Character.GenderType.FEMALE
                 },
@@ -83,10 +67,6 @@ namespace Demo_FileIO_NTier
                     Id = 5,
                     LastName = "Rubble",
                     FirstName = "Betty",
-                    Address = "303 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 26,
                     Gender = Character.GenderType.FEMALE
                 },
@@ -95,10 +75,6 @@ namespace Demo_FileIO_NTier
                     Id = 6,
                     LastName = "Rubble",
                     FirstName = "Bamm-Bamm",
-                    Address = "303 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 2,
                     Gender = Character.GenderType.MALE
                 },
@@ -107,10 +83,6 @@ namespace Demo_FileIO_NTier
                     Id = 7,
                     LastName = "",
                     FirstName = "Dino",
-                    Address = "301 Cobblestone Way",
-                    City = "Bedrock",
-                    State = "MI",
-                    Zip = "70777",
                     Age = 7,
                     Gender = Character.GenderType.FEMALE
                 }

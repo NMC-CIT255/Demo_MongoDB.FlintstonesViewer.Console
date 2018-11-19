@@ -25,7 +25,7 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         /// <param name="success">operation status</param>
         /// <param name="message">error message</param>
         /// <returns></returns>
-        public IEnumerable<Character> GetCharacters(out bool success, out string message)
+        public IEnumerable<Character> RetrieveCharacters(out bool success, out string message)
         {
             _characters = null;
             success = false;
@@ -54,6 +54,27 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
             }
 
             return _characters;
+        }
+
+
+        public void SaveCharacters(List<Character> characters, out bool success, out string message)
+        {
+            _characters = null;
+            success = false;
+            message = "";
+            try
+            {
+                _dataService.WriteAll(characters);
+                success = true;
+            }
+            catch (FileNotFoundException)
+            {
+                message = "Unable to locate the data file.";
+            }
+            catch (Exception e)
+            {
+                message = e.Message;
+            }
         }
     }
 }

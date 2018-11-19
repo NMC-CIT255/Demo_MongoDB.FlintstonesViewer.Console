@@ -61,7 +61,6 @@ namespace Demo_FileIO_NTier.DataAccessLayer
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
