@@ -25,7 +25,7 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         /// <param name="success">operation status</param>
         /// <param name="message">error message</param>
         /// <returns></returns>
-        public IEnumerable<Character> RetrieveCharacters(out bool success, out string message)
+        public IEnumerable<Character> GetAllCharacters(out bool success, out string message)
         {
             _characters = null;
             success = false;
@@ -56,8 +56,13 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
             return _characters;
         }
 
-
-        public void SaveCharacters(List<Character> characters, out bool success, out string message)
+        /// <summary>
+        /// save list of characters to data file
+        /// </summary>
+        /// <param name="characters"></param>
+        /// <param name="success"></param>
+        /// <param name="message"></param>
+        public void SaveAllCharacters(List<Character> characters, out bool success, out string message)
         {
             _characters = null;
             success = false;
@@ -75,6 +80,46 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
             {
                 message = e.Message;
             }
+        }
+
+        /// <summary>
+        /// get character by id
+        /// </summary>
+        /// <param name="id">id</param>
+        /// <param name="success">success</param>
+        /// <param name="message">message</param>
+        /// <returns></returns>
+        public Character GetCharacterById(int id, out bool success, out string message)
+        {
+            success = false;
+            message = "";
+
+            _characters = GetAllCharacters(out success, out message) as List<Character>;
+            Character character = _characters.FirstOrDefault(c => c.Id == id);
+
+            if (character != null)
+            {
+                success = true;
+            }
+            else
+            {
+                message = $"No character has id {id}.";
+                success = false;
+            }
+
+            return character;
+        }
+
+        public void AddCharacter(Character character, out bool success, out string message)
+        {
+            success = false;
+            message = "";
+
+            _characters = GetAllCharacters(out success, out message) as List<Character>;
+
+            _characters.Add(character);
+
+            SaveAllCharacters(_characters, out success, out message);
         }
     }
 }

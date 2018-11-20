@@ -40,12 +40,13 @@ namespace Demo_FileIO_NTier.PresentationLayer
                 Console.WriteLine("Main Menu");
                 Console.WriteLine();
 
-                Console.WriteLine("\t1) Retrieve Characters from Data File");
-                Console.WriteLine("\t2) Display Characters");
-                Console.WriteLine("\t3) Add Character");
-                Console.WriteLine("\t4) Delete Character");
-                Console.WriteLine("\t5) Update Character");
-                Console.WriteLine("\t6) Save Characters to Data File");
+                Console.WriteLine("\t1) Retrieve Characters from Data File (Debug Only)");
+                Console.WriteLine("\t2) Display Character List");
+                Console.WriteLine("\t3) Display Character Detail");
+                Console.WriteLine("\t4) Add Character");
+                Console.WriteLine("\t5) Delete Character");
+                Console.WriteLine("\t6) Update Character");
+                Console.WriteLine("\t7) Save Characters to Data File (Debug Only)");
                 Console.WriteLine("\tE) Exit");
                 Console.WriteLine();
                 Console.Write("Enter Choice:");
@@ -71,19 +72,23 @@ namespace Demo_FileIO_NTier.PresentationLayer
                     break;
 
                 case '3':
-                    DisplayAddCharacter();
+                    DisplayCharacterDetail();
                     break;
 
                 case '4':
-                    DisplayDeleteCharacter();
+                    DisplayAddCharacter();
                     break;
 
                 case '5':
-                    DisplayUpdateCharacter();
+                    DisplayDeleteCharacter();
                     break;
 
                 case '6':
-                    DisplaySaveCharactersFromDataFile();
+                    DisplayUpdateCharacter();
+                    break;
+
+                case '7':
+                    DisplaySaveCharactersToDataFile();
                     break;
 
                 case 'e':
@@ -98,11 +103,100 @@ namespace Demo_FileIO_NTier.PresentationLayer
             return runApplicationLoop;
         }
 
-        private void DisplayUpdateCharacter()
+        private void DisplayCharacterDetail()
         {
-            throw new NotImplementedException();
+            Character character;
+
+            DisplayHeader("Character Detail");
+
+            DisplayCharacterTable();
+
+            Console.Write("Enter Id of Character to View:");
+            int.TryParse(Console.ReadLine(), out int id);
+
+            character = _charactersBLL.GetCharacterById(id, out bool success, out string message);
+
+            if (success)
+            {
+                DisplayHeader("Character Detail");
+                DisplayCharacterInformation(character);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
+
+            DisplayContinuePrompt();
         }
 
+        /// <summary>
+        /// update character
+        /// </summary>
+        private void DisplayUpdateCharacter()
+        {
+            Character character;
+            string userResponse;
+
+            DisplayHeader("Update Character");
+
+            DisplayCharacterTable();
+
+            Console.Write("Enter Id of Character to Update:");
+            int.TryParse(Console.ReadLine(), out int id);
+
+            character = _characters.FirstOrDefault(c => c.Id == id);
+
+            if (character != null)
+            {
+                DisplayHeader("Character Detail");
+                Console.WriteLine("Current Character Information");
+                DisplayCharacterInformation(character);
+                Console.WriteLine();
+
+                Console.WriteLine("Update each field or use the Enter key to keep the current information.");
+                Console.WriteLine();
+
+                Console.Write("Enter First Name:");
+                userResponse = Console.ReadLine();
+                if (userResponse != "")
+                {
+                    character.FirstName = userResponse;
+                }
+
+                Console.Write("Enter Last Name:");
+                userResponse = Console.ReadLine();
+                if (userResponse != "")
+                {
+                    character.LastName = Console.ReadLine();
+                }
+
+                Console.Write("Enter Age:");
+                userResponse = Console.ReadLine();
+                if (userResponse != "")
+                {
+                    int.TryParse(Console.ReadLine(), out int age);
+                    character.Age = age;
+                }
+
+                Console.Write("Enter Gender:");
+                userResponse = Console.ReadLine();
+                if (userResponse != "")
+                {
+                    Enum.TryParse(Console.ReadLine().ToUpper(), out Character.GenderType gender);
+                    character.Gender = gender;
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No character has id {id}.");
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// delete character
+        /// </summary>
         private void DisplayDeleteCharacter()
         {
             DisplayHeader("Delete Character");
@@ -117,6 +211,9 @@ namespace Demo_FileIO_NTier.PresentationLayer
             DisplayContinuePrompt();
         }
 
+        /// <summary>
+        /// add character
+        /// </summary>
         private void DisplayAddCharacter()
         {
             Character character = new Character();
@@ -145,28 +242,11 @@ namespace Demo_FileIO_NTier.PresentationLayer
             Console.WriteLine($"\tAge: {character.Age}");
             Console.WriteLine($"\tGender: {character.Gender}");
 
-            _characters.Add(character);
-
-            DisplayContinuePrompt();
-        }
-
-        private void DisplayRetrieveCharactersFromDataFile()
-        {
-            bool success;
-            string message;
-
-            DisplayHeader("Retrieve Characters from Data File");
-
-            Console.WriteLine("Press any key to begin retrieving the data.");
-            Console.ReadKey();
-
-            List<Character> characters = _charactersBLL.RetrieveCharacters(out success, out message) as List<Character>;
-            _characters = characters.OrderBy(c => c.Id).ToList();
+            _charactersBLL.AddCharacter(character, out bool success, out string message);
 
             if (success)
             {
-                Console.WriteLine();
-                Console.WriteLine("Data retrieved.");
+                Console.WriteLine("Character added.");
             }
             else
             {
@@ -176,7 +256,44 @@ namespace Demo_FileIO_NTier.PresentationLayer
             DisplayContinuePrompt();
         }
 
-        private void DisplaySaveCharactersFromDataFile()
+        /// <summary>
+        /// retrieve list of characters from data file
+        /// </summary>
+        private void DisplayRetrieveCharactersFromDataFile()
+        {
+            DisplayHeader("Retrieve Characters from Data File");
+
+            Console.WriteLine("Press any key to begin retrieving the data.");
+            Console.ReadKey();
+
+            _characters = GetAllCharacters();
+
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// get a list of characters ordered by id
+        /// </summary>
+        /// <returns>list of characters</returns>
+        private List<Character> GetAllCharacters()
+        {
+            List<Character> characters = _charactersBLL.GetAllCharacters(out bool success, out string message) as List<Character>;
+            _characters = characters.OrderBy(c => c.Id).ToList();
+
+            if (!success)
+            {
+                Console.WriteLine();
+                Console.WriteLine(message);
+                Console.WriteLine();
+            }
+
+            return characters;
+        }
+
+        /// <summary>
+        /// save list of characters to data file
+        /// </summary>
+        private void DisplaySaveCharactersToDataFile()
         {
             bool success;
             string message;
@@ -184,9 +301,9 @@ namespace Demo_FileIO_NTier.PresentationLayer
             DisplayHeader("Save Characters to Data File");
 
             Console.WriteLine("Press any key to begin saving the data.");
-            Console.ReadKey();            
+            Console.ReadKey();
 
-            _charactersBLL.SaveCharacters(_characters, out success, out message);
+            _charactersBLL.SaveAllCharacters(_characters, out success, out message);
 
             if (success)
             {
@@ -209,9 +326,23 @@ namespace Demo_FileIO_NTier.PresentationLayer
         {
             DisplayHeader("List of Characters");
 
+            _characters = GetAllCharacters();
+
             DisplayCharacterTable();
 
             DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// display the details of a character
+        /// </summary>
+        /// <param name="character">character</param>
+        private void DisplayCharacterInformation(Character character)
+        {
+            Console.WriteLine($"\tName: {character.FirstName} {character.LastName}");
+            Console.WriteLine($"\tId: {character.Id}");
+            Console.WriteLine($"\tAge: {character.Age}");
+            Console.WriteLine($"\tGender: {character.Gender}");
         }
 
         /// <summary>
