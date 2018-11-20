@@ -12,15 +12,16 @@ using MongoDB.Bson;
 namespace Demo_FileIO_NTier.DataAccessLayer
 
 {
-    public class MongoDBDataService : IDataService
+    public class MongoDBSimpleDataService : IDataService
     {
+
         static string _connectionString;
 
         /// <summary>
         /// read the mongoDb collection and load a list of character objects
         /// </summary>
         /// <returns>list of characters</returns>
-        public IEnumerable<Character> ReadAll()
+        public IEnumerable<Character> ReadAll(out MongoDbStatusCode statusCode)
         {
             List<Character> characters = new List<Character>();
 
@@ -31,10 +32,12 @@ namespace Demo_FileIO_NTier.DataAccessLayer
                 IMongoCollection<Character> characterList = database.GetCollection<Character>("flintstone_characters");
 
                 characters = characterList.Find(Builders<Character>.Filter.Empty).ToList();
+
+                statusCode = MongoDbStatusCode.GOOD;
             }
             catch (Exception)
             {
-                throw;
+                statusCode = MongoDbStatusCode.ERROR;
             }
 
             return characters;
@@ -44,7 +47,7 @@ namespace Demo_FileIO_NTier.DataAccessLayer
         /// write the current list of characters to the mongoDb collection
         /// </summary>
         /// <param name="characters">list of characters</param>
-        public void WriteAll(IEnumerable<Character> characters)
+        public void WriteAll(IEnumerable<Character> characters, out MongoDbStatusCode statusCode)
         {
             try
             {
@@ -58,14 +61,16 @@ namespace Demo_FileIO_NTier.DataAccessLayer
                 characterList.DeleteMany(Builders<Character>.Filter.Empty);
 
                 characterList.InsertMany(characters);
+
+                statusCode = MongoDbStatusCode.GOOD;
             }
             catch (Exception)
             {
-                throw;
+                statusCode = MongoDbStatusCode.ERROR;
             }
         }
 
-        public MongoDBDataService()
+        public MongoDBSimpleDataService()
         {
             _connectionString = DataSettings.connectionString;
         }

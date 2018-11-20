@@ -5,6 +5,7 @@ using Demo_FileIO_NTier.BusinessLogicLayer;
 using Demo_FileIO_NTier.Models;
 using System.Text;
 using System.Threading.Tasks;
+using Demo_FileIO_NTier.DataAccessLayer;
 
 namespace Demo_FileIO_NTier.PresentationLayer
 {
@@ -28,6 +29,9 @@ namespace Demo_FileIO_NTier.PresentationLayer
             DisplayClosingScreen();
         }
 
+        /// <summary>
+        /// display main menu
+        /// </summary>
         private void DisplayMainMenu()
         {
             char menuChoice;
@@ -57,6 +61,11 @@ namespace Demo_FileIO_NTier.PresentationLayer
 
         }
 
+        /// <summary>
+        /// process main menu choice
+        /// </summary>
+        /// <param name="menuChoice">menu choice</param>
+        /// <returns></returns>
         private bool ProcessMainMenuChoice(char menuChoice)
         {
             bool runApplicationLoop = true;
@@ -64,7 +73,7 @@ namespace Demo_FileIO_NTier.PresentationLayer
             switch (menuChoice)
             {
                 case '1':
-                    DisplayRetrieveCharactersFromDataFile();
+                    DisplayLoadCharactersFromDataFile();
                     break;
 
                 case '2':
@@ -103,23 +112,18 @@ namespace Demo_FileIO_NTier.PresentationLayer
             return runApplicationLoop;
         }
 
-        private void DisplayCharacterDetail()
+        /// <summary>
+        /// display list of character screen - ids and full name
+        /// </summary>
+        private void DisplayListOfCharacters()
         {
-            Character character;
+            DisplayHeader("List of Characters");
 
-            DisplayHeader("Character Detail");
+            _characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
 
-            DisplayCharacterTable();
-
-            Console.Write("Enter Id of Character to View:");
-            int.TryParse(Console.ReadLine(), out int id);
-
-            character = _charactersBLL.GetCharacterById(id, out bool success, out string message);
-
-            if (success)
+            if (statusCode == MongoDbStatusCode.GOOD)
             {
-                DisplayHeader("Character Detail");
-                DisplayCharacterInformation(character);
+                DisplayCharacterListTable();
             }
             else
             {
@@ -130,7 +134,107 @@ namespace Demo_FileIO_NTier.PresentationLayer
         }
 
         /// <summary>
-        /// update character
+        /// display character detail screen
+        /// </summary>
+        private void DisplayCharacterDetail()
+        {
+            Character character;
+
+            DisplayHeader("Character Detail");
+
+            DisplayCharacterListTable();
+
+            Console.Write("Enter Id of Character to View:");
+            int.TryParse(Console.ReadLine(), out int id);
+
+            character = _charactersBLL.GetCharacterById(id, out MongoDbStatusCode statusCode, out string message);
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                DisplayHeader("Character Detail");
+                DisplayCharacterDetailTable(character);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// display add character screen
+        /// </summary>
+        private void DisplayAddCharacter()
+        {
+            Character character = new Character();
+
+            // get current max id and increment for new id
+            character.Id = _characters.Max(c => c.Id) + 1;
+
+            DisplayHeader("Add Character");
+
+            Console.Write("Enter First Name:");
+            character.FirstName = Console.ReadLine();
+            Console.Write("Enter Last Name:");
+            character.LastName = Console.ReadLine();
+            Console.Write("Enter Age:");
+            int.TryParse(Console.ReadLine(), out int age);
+            character.Age = age;
+            Console.Write("Enter Gender:");
+            Enum.TryParse(Console.ReadLine().ToUpper(), out Character.GenderType gender);
+            character.Gender = gender;
+
+            Console.WriteLine();
+            Console.WriteLine("New Character Added");
+            Console.WriteLine($"\tId: {character.Id}");
+            Console.WriteLine($"\tFirst Name: {character.FirstName}");
+            Console.WriteLine($"\tLast Name: {character.LastName}");
+            Console.WriteLine($"\tAge: {character.Age}");
+            Console.WriteLine($"\tGender: {character.Gender}");
+
+            _charactersBLL.AddCharacter(character, out MongoDbStatusCode statusCode, out string message);
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                Console.WriteLine("Character added.");
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// display delete character screen
+        /// </summary>
+        private void DisplayDeleteCharacter()
+        {
+            DisplayHeader("Delete Character");
+
+            DisplayCharacterListTable();
+
+            Console.Write("Enter Id of Character to Delete:");
+            int.TryParse(Console.ReadLine(), out int id);
+
+            _charactersBLL.DeleteCharacter(id, out MongoDbStatusCode statusCode, out string message);
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                Console.WriteLine("Character deleted.");
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        /// <summary>
+        /// display update character screen
         /// </summary>
         private void DisplayUpdateCharacter()
         {
@@ -139,7 +243,7 @@ namespace Demo_FileIO_NTier.PresentationLayer
 
             DisplayHeader("Update Character");
 
-            DisplayCharacterTable();
+            DisplayCharacterListTable();
 
             Console.Write("Enter Id of Character to Update:");
             int.TryParse(Console.ReadLine(), out int id);
@@ -150,7 +254,7 @@ namespace Demo_FileIO_NTier.PresentationLayer
             {
                 DisplayHeader("Character Detail");
                 Console.WriteLine("Current Character Information");
-                DisplayCharacterInformation(character);
+                DisplayCharacterDetailTable(character);
                 Console.WriteLine();
 
                 Console.WriteLine("Update each field or use the Enter key to keep the current information.");
@@ -191,62 +295,11 @@ namespace Demo_FileIO_NTier.PresentationLayer
                 Console.WriteLine($"No character has id {id}.");
             }
 
-            DisplayContinuePrompt();
-        }
+            _charactersBLL.UpdateCharacter(character, out MongoDbStatusCode statusCode, out string message);
 
-        /// <summary>
-        /// delete character
-        /// </summary>
-        private void DisplayDeleteCharacter()
-        {
-            DisplayHeader("Delete Character");
-
-            DisplayCharacterTable();
-
-            Console.Write("Enter Id of Character to Delete:");
-            int.TryParse(Console.ReadLine(), out int id);
-
-            _characters.Remove(_characters.FirstOrDefault(c => c.Id == id));
-
-            DisplayContinuePrompt();
-        }
-
-        /// <summary>
-        /// add character
-        /// </summary>
-        private void DisplayAddCharacter()
-        {
-            Character character = new Character();
-
-            // get current max id and increment for new id
-            character.Id = _characters.Max(c => c.Id) + 1;
-
-            DisplayHeader("Add Character");
-
-            Console.Write("Enter First Name:");
-            character.FirstName = Console.ReadLine();
-            Console.Write("Enter Last Name:");
-            character.LastName = Console.ReadLine();
-            Console.Write("Enter Age:");
-            int.TryParse(Console.ReadLine(), out int age);
-            character.Age = age;
-            Console.Write("Enter Gender:");
-            Enum.TryParse(Console.ReadLine().ToUpper(), out Character.GenderType gender);
-            character.Gender = gender;
-
-            Console.WriteLine();
-            Console.WriteLine("New Character Added");
-            Console.WriteLine($"\tId: {character.Id}");
-            Console.WriteLine($"\tFirst Name: {character.FirstName}");
-            Console.WriteLine($"\tLast Name: {character.LastName}");
-            Console.WriteLine($"\tAge: {character.Age}");
-            Console.WriteLine($"\tGender: {character.Gender}");
-
-            _charactersBLL.AddCharacter(character, out bool success, out string message);
-
-            if (success)
+            if (statusCode == MongoDbStatusCode.GOOD)
             {
-                Console.WriteLine("Character added.");
+                Console.WriteLine("Character updated.");
             }
             else
             {
@@ -257,55 +310,44 @@ namespace Demo_FileIO_NTier.PresentationLayer
         }
 
         /// <summary>
-        /// retrieve list of characters from data file
+        /// display load list of characters from data file screen (debug only)
         /// </summary>
-        private void DisplayRetrieveCharactersFromDataFile()
+        private void DisplayLoadCharactersFromDataFile()
         {
             DisplayHeader("Retrieve Characters from Data File");
 
             Console.WriteLine("Press any key to begin retrieving the data.");
             Console.ReadKey();
 
-            _characters = GetAllCharacters();
+            _characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                Console.WriteLine("Data retrieved.");
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
 
             DisplayContinuePrompt();
         }
 
         /// <summary>
-        /// get a list of characters ordered by id
-        /// </summary>
-        /// <returns>list of characters</returns>
-        private List<Character> GetAllCharacters()
-        {
-            List<Character> characters = _charactersBLL.GetAllCharacters(out bool success, out string message) as List<Character>;
-            _characters = characters.OrderBy(c => c.Id).ToList();
-
-            if (!success)
-            {
-                Console.WriteLine();
-                Console.WriteLine(message);
-                Console.WriteLine();
-            }
-
-            return characters;
-        }
-
-        /// <summary>
-        /// save list of characters to data file
+        /// display save list of characters to data file (debug only)
         /// </summary>
         private void DisplaySaveCharactersToDataFile()
         {
-            bool success;
             string message;
 
-            DisplayHeader("Save Characters to Data File");
+            DisplayHeader("Save Characters to Data File (Debug Only)");
 
             Console.WriteLine("Press any key to begin saving the data.");
             Console.ReadKey();
 
-            _charactersBLL.SaveAllCharacters(_characters, out success, out message);
+            _charactersBLL.SaveAllCharacters(_characters, out MongoDbStatusCode statusCode, out message);
 
-            if (success)
+            if (statusCode == MongoDbStatusCode.GOOD)
             {
                 Console.WriteLine();
                 Console.WriteLine("Data saved.");
@@ -318,26 +360,13 @@ namespace Demo_FileIO_NTier.PresentationLayer
             DisplayContinuePrompt();
         }
 
+        #region HELPER METHODS
 
         /// <summary>
-        /// display a list of character ids and full name
-        /// </summary>
-        private void DisplayListOfCharacters()
-        {
-            DisplayHeader("List of Characters");
-
-            _characters = GetAllCharacters();
-
-            DisplayCharacterTable();
-
-            DisplayContinuePrompt();
-        }
-
-        /// <summary>
-        /// display the details of a character
+        /// display details of a character table
         /// </summary>
         /// <param name="character">character</param>
-        private void DisplayCharacterInformation(Character character)
+        private void DisplayCharacterDetailTable(Character character)
         {
             Console.WriteLine($"\tName: {character.FirstName} {character.LastName}");
             Console.WriteLine($"\tId: {character.Id}");
@@ -349,7 +378,7 @@ namespace Demo_FileIO_NTier.PresentationLayer
         /// display a table with id and full name columns
         /// </summary>
         /// <param name="characters">characters</param>
-        private void DisplayCharacterTable()
+        private void DisplayCharacterListTable()
         {
             if (_characters != null)
             {
@@ -424,5 +453,6 @@ namespace Demo_FileIO_NTier.PresentationLayer
             DisplayContinuePrompt();
         }
 
+        #endregion
     }
 }

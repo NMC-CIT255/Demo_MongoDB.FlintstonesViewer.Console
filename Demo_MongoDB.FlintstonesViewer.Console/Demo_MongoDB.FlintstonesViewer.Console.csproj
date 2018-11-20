@@ -65,7 +65,8 @@
   <ItemGroup>
     <Compile Include="BusinessLogicLayer\CharacterBLL.cs" />
     <Compile Include="DataAccessLayer\IDataService.cs" />
-    <Compile Include="DataAccessLayer\MongoDBDataService.cs" />
+    <Compile Include="DataAccessLayer\MongoDBSimpleDataService.cs" />
+    <Compile Include="DataAccessLayer\MongoDbStatusCode.cs" />
     <Compile Include="Data\DataSettings.cs" />
     <Compile Include="Models\Character.cs" />
     <Compile Include="PresentationLayer\Presenter.cs" />

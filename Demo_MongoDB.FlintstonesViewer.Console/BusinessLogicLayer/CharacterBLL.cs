@@ -22,63 +22,49 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         /// <summary>
         /// get IEnumberable of all characters sorted by Id
         /// </summary>
-        /// <param name="success">operation status</param>
+        /// <param name="statusCode">operation status</param>
         /// <param name="message">error message</param>
         /// <returns></returns>
-        public IEnumerable<Character> GetAllCharacters(out bool success, out string message)
+        public IEnumerable<Character> GetAllCharacters(out MongoDbStatusCode statusCode, out string message)
         {
             _characters = null;
-            success = false;
             message = "";
-            try
-            {
-                _characters = _dataService.ReadAll() as List<Character>;
-                _characters.OrderBy(c => c.Id);
+            _characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
-                if (_characters.Count > 0)
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                if (_characters != null)
                 {
-                    success = true;
-                }
-                else
-                {
-                    message = "It appears there is no data in the file.";
+                    _characters.OrderBy(c => c.Id);
                 }
             }
-            catch (FileNotFoundException)
+            else
             {
-                message = "Unable to locate the data file.";
-            }
-            catch (Exception e)
-            {
-                message = e.Message;
+                message = "An error occurred connecting to the database.";
             }
 
             return _characters;
         }
 
         /// <summary>
-        /// save list of characters to data file
+        /// save all characters to data file
         /// </summary>
-        /// <param name="characters"></param>
-        /// <param name="success"></param>
-        /// <param name="message"></param>
-        public void SaveAllCharacters(List<Character> characters, out bool success, out string message)
+        /// <param name="characters">characters</param>
+        /// <param name="statusCode">status code</param>
+        /// <param name="message">message</param>
+        public void SaveAllCharacters(List<Character> characters, out MongoDbStatusCode statusCode, out string message)
         {
             _characters = null;
-            success = false;
             message = "";
-            try
+            _dataService.WriteAll(characters, out statusCode);
+
+            if (statusCode == MongoDbStatusCode.GOOD)
             {
-                _dataService.WriteAll(characters);
-                success = true;
+                message = "Data saved.";
             }
-            catch (FileNotFoundException)
+            else
             {
-                message = "Unable to locate the data file.";
-            }
-            catch (Exception e)
-            {
-                message = e.Message;
+                message = "An error occurred connecting to the database.";
             }
         }
 
@@ -86,40 +72,125 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         /// get character by id
         /// </summary>
         /// <param name="id">id</param>
-        /// <param name="success">success</param>
+        /// <param name="statusCode">status code</param>
         /// <param name="message">message</param>
         /// <returns></returns>
-        public Character GetCharacterById(int id, out bool success, out string message)
+        public Character GetCharacterById(int id, out MongoDbStatusCode statusCode, out string message)
         {
-            success = false;
             message = "";
+            Character character = null;
 
-            _characters = GetAllCharacters(out success, out message) as List<Character>;
-            Character character = _characters.FirstOrDefault(c => c.Id == id);
+            _characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
-            if (character != null)
+            if (statusCode == MongoDbStatusCode.GOOD)
             {
-                success = true;
-            }
-            else
-            {
-                message = $"No character has id {id}.";
-                success = false;
+                character = _characters.FirstOrDefault(c => c.Id == id);
+
+                if (character == null)
+                {
+                    message = $"No character has id {id}.";
+                    statusCode = MongoDbStatusCode.ERROR;
+                }
             }
 
             return character;
         }
 
-        public void AddCharacter(Character character, out bool success, out string message)
+        /// <summary>
+        /// add a character to the data file
+        /// </summary>
+        /// <param name="character">character</param>
+        /// <param name="statusCode">status code</param>
+        /// <param name="message">message</param>
+        public void AddCharacter(Character character, out MongoDbStatusCode statusCode, out string message)
         {
-            success = false;
             message = "";
 
-            _characters = GetAllCharacters(out success, out message) as List<Character>;
+            _characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
-            _characters.Add(character);
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                if (_characters != null)
+                {
+                    _characters.Add(character);
+                }
+            }
 
-            SaveAllCharacters(_characters, out success, out message);
+            _dataService.WriteAll(_characters, out statusCode);
+
+            if (statusCode == MongoDbStatusCode.ERROR)
+            {
+                message = "There was an error connecting to the data file.";
+            }
+        }
+
+        /// <summary>
+        /// delete a character from the data file
+        /// </summary>
+        /// <param name="character">character</param>
+        /// <param name="statusCode">status code</param>
+        /// <param name="message">message</param>
+        internal void DeleteCharacter(int id, out MongoDbStatusCode statusCode, out string message)
+        {
+            message = "";
+
+            _characters = GetAllCharacters(out statusCode, out message) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                if (_characters.Exists(c => c.Id == id))
+                {
+                    _characters.Remove(_characters.FirstOrDefault(c => c.Id == id));
+                    _dataService.WriteAll(_characters, out statusCode);
+                    if (statusCode == MongoDbStatusCode.ERROR)
+                    {
+                        message = "There was an error connecting to the data file.";
+                    }
+                }
+                else
+                {
+                    message = $"Character with id {id} does not exist.";
+                }
+            }
+            else
+            {
+                message = "There was an error connecting to the data file.";
+            }
+        }
+
+        /// <summary>
+        /// update a character in the data file
+        /// </summary>
+        /// <param name="character">character</param>
+        /// <param name="statusCode">status code</param>
+        /// <param name="message">message</param>
+        public void UpdateCharacter(Character character, out MongoDbStatusCode statusCode, out string message)
+        {
+            message = "";
+
+            _characters = GetAllCharacters(out statusCode, out message) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                if (_characters != null)
+                {
+                    if (_characters.Exists(c => c.Id == character.Id))
+                    {
+                        _characters.Remove(_characters.FirstOrDefault(c => c.Id == character.Id));
+                        _characters.Add(character);
+                        _dataService.WriteAll(_characters, out statusCode);
+                        if (statusCode == MongoDbStatusCode.ERROR)
+                        {
+                            message = "There was an error connecting to the data file.";
+                        }
+                    }
+                    else
+                    {
+                        message = "Unable to locate character in data file.";
+                        statusCode = MongoDbStatusCode.ERROR;
+                    }
+                }
+            }
         }
     }
 }

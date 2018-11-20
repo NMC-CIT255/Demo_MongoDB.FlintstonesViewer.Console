@@ -14,16 +14,23 @@ namespace Demo_FileIO_NTier
     {
         static void Main(string[] args)
         {
-            IDataService dataService = new MongoDBDataService();
+            IDataService dataService = new MongoDBSimpleDataService();
 
             //
             // Required to test the MongoDB data service
             // refresh MongoDB collection 
             //
-            dataService.WriteAll(GenerateListOfCharacters());
+            dataService.WriteAll(GenerateListOfCharacters(), out MongoDbStatusCode statusCode);
 
-            CharacterBLL characterBLL = new CharacterBLL(dataService);
-            Presenter presenter = new Presenter(characterBLL);
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                CharacterBLL characterBLL = new CharacterBLL(dataService);
+                Presenter presenter = new Presenter(characterBLL);
+            }
+            else
+            {
+                Console.WriteLine("There was an error connecting to data file.");
+            }
         }
 
         private static List<Character> GenerateListOfCharacters()
