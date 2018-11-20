@@ -12,7 +12,7 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
     class CharacterBLL
     {
         IDataService _dataService;
-        List<Character> _characters;
+        //List<Character> _characters;
 
         public CharacterBLL(IDataService dataservice)
         {
@@ -27,15 +27,15 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         /// <returns></returns>
         public IEnumerable<Character> GetAllCharacters(out MongoDbStatusCode statusCode, out string message)
         {
-            _characters = null;
+            List<Character> characters = null;
             message = "";
-            _characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                if (_characters != null)
+                if (characters != null)
                 {
-                    _characters.OrderBy(c => c.Id);
+                    characters.OrderBy(c => c.Id);
                 }
             }
             else
@@ -43,29 +43,7 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
                 message = "An error occurred connecting to the database.";
             }
 
-            return _characters;
-        }
-
-        /// <summary>
-        /// save all characters to data file
-        /// </summary>
-        /// <param name="characters">characters</param>
-        /// <param name="statusCode">status code</param>
-        /// <param name="message">message</param>
-        public void SaveAllCharacters(List<Character> characters, out MongoDbStatusCode statusCode, out string message)
-        {
-            _characters = null;
-            message = "";
-            _dataService.WriteAll(characters, out statusCode);
-
-            if (statusCode == MongoDbStatusCode.GOOD)
-            {
-                message = "Data saved.";
-            }
-            else
-            {
-                message = "An error occurred connecting to the database.";
-            }
+            return characters;
         }
 
         /// <summary>
@@ -80,11 +58,11 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
             message = "";
             Character character = null;
 
-            _characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                character = _characters.FirstOrDefault(c => c.Id == id);
+                character = characters.FirstOrDefault(c => c.Id == id);
 
                 if (character == null)
                 {
@@ -106,17 +84,17 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         {
             message = "";
 
-            _characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                if (_characters != null)
+                if (characters != null)
                 {
-                    _characters.Add(character);
+                    characters.Add(character);
                 }
             }
 
-            _dataService.WriteAll(_characters, out statusCode);
+            _dataService.WriteAll(characters, out statusCode);
 
             if (statusCode == MongoDbStatusCode.ERROR)
             {
@@ -134,14 +112,14 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         {
             message = "";
 
-            _characters = GetAllCharacters(out statusCode, out message) as List<Character>;
+            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                if (_characters.Exists(c => c.Id == id))
+                if (characters.Exists(c => c.Id == id))
                 {
-                    _characters.Remove(_characters.FirstOrDefault(c => c.Id == id));
-                    _dataService.WriteAll(_characters, out statusCode);
+                    characters.Remove(characters.FirstOrDefault(c => c.Id == id));
+                    _dataService.WriteAll(characters, out statusCode);
                     if (statusCode == MongoDbStatusCode.ERROR)
                     {
                         message = "There was an error connecting to the data file.";
@@ -150,6 +128,7 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
                 else
                 {
                     message = $"Character with id {id} does not exist.";
+                    statusCode = MongoDbStatusCode.ERROR;
                 }
             }
             else
@@ -168,17 +147,17 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
         {
             message = "";
 
-            _characters = GetAllCharacters(out statusCode, out message) as List<Character>;
+            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                if (_characters != null)
+                if (characters != null)
                 {
-                    if (_characters.Exists(c => c.Id == character.Id))
+                    if (characters.Exists(c => c.Id == character.Id))
                     {
-                        _characters.Remove(_characters.FirstOrDefault(c => c.Id == character.Id));
-                        _characters.Add(character);
-                        _dataService.WriteAll(_characters, out statusCode);
+                        characters.Remove(characters.FirstOrDefault(c => c.Id == character.Id));
+                        characters.Add(character);
+                        _dataService.WriteAll(characters, out statusCode);
                         if (statusCode == MongoDbStatusCode.ERROR)
                         {
                             message = "There was an error connecting to the data file.";
@@ -191,6 +170,20 @@ namespace Demo_FileIO_NTier.BusinessLogicLayer
                     }
                 }
             }
+        }
+
+        public int NextIdNumber()
+        {
+            int nextIdNumber = 0;
+
+            List<Character> characters = _dataService.ReadAll(out MongoDbStatusCode statusCode) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                nextIdNumber = characters.Max(c => c.Id) + 1;
+            }
+
+            return nextIdNumber;
         }
     }
 }

@@ -12,13 +12,11 @@ namespace Demo_FileIO_NTier.PresentationLayer
     class Presenter
     {
         static CharacterBLL _charactersBLL;
-        static List<Character> _characters;
+        //static List<Character> _characters;
 
         public Presenter(CharacterBLL characterBLL)
         {
             _charactersBLL = characterBLL;
-            _characters = new List<Character>();
-
             ManageApplicationLoop();
         }
 
@@ -50,7 +48,6 @@ namespace Demo_FileIO_NTier.PresentationLayer
                 Console.WriteLine("\t4) Add Character");
                 Console.WriteLine("\t5) Delete Character");
                 Console.WriteLine("\t6) Update Character");
-                Console.WriteLine("\t7) Save Characters to Data File (Debug Only)");
                 Console.WriteLine("\tE) Exit");
                 Console.WriteLine();
                 Console.Write("Enter Choice:");
@@ -96,10 +93,6 @@ namespace Demo_FileIO_NTier.PresentationLayer
                     DisplayUpdateCharacter();
                     break;
 
-                case '7':
-                    DisplaySaveCharactersToDataFile();
-                    break;
-
                 case 'e':
                 case 'E':
                     runApplicationLoop = false;
@@ -119,11 +112,11 @@ namespace Demo_FileIO_NTier.PresentationLayer
         {
             DisplayHeader("List of Characters");
 
-            _characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                DisplayCharacterListTable();
+                DisplayCharacterListTable(characters);
             }
             else
             {
@@ -142,12 +135,21 @@ namespace Demo_FileIO_NTier.PresentationLayer
 
             DisplayHeader("Character Detail");
 
-            DisplayCharacterListTable();
+            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                DisplayCharacterListTable(characters);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
 
             Console.Write("Enter Id of Character to View:");
             int.TryParse(Console.ReadLine(), out int id);
 
-            character = _charactersBLL.GetCharacterById(id, out MongoDbStatusCode statusCode, out string message);
+            character = _charactersBLL.GetCharacterById(id, out statusCode, out message);
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
@@ -170,7 +172,7 @@ namespace Demo_FileIO_NTier.PresentationLayer
             Character character = new Character();
 
             // get current max id and increment for new id
-            character.Id = _characters.Max(c => c.Id) + 1;
+            character.Id = _charactersBLL.NextIdNumber();
 
             DisplayHeader("Add Character");
 
@@ -186,7 +188,7 @@ namespace Demo_FileIO_NTier.PresentationLayer
             character.Gender = gender;
 
             Console.WriteLine();
-            Console.WriteLine("New Character Added");
+            Console.WriteLine("New Character To Add");
             Console.WriteLine($"\tId: {character.Id}");
             Console.WriteLine($"\tFirst Name: {character.FirstName}");
             Console.WriteLine($"\tLast Name: {character.LastName}");
@@ -197,7 +199,8 @@ namespace Demo_FileIO_NTier.PresentationLayer
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
-                Console.WriteLine("Character added.");
+                Console.WriteLine();
+                Console.WriteLine("Character Added");
             }
             else
             {
@@ -214,12 +217,21 @@ namespace Demo_FileIO_NTier.PresentationLayer
         {
             DisplayHeader("Delete Character");
 
-            DisplayCharacterListTable();
+            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                DisplayCharacterListTable(characters);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
 
             Console.Write("Enter Id of Character to Delete:");
             int.TryParse(Console.ReadLine(), out int id);
 
-            _charactersBLL.DeleteCharacter(id, out MongoDbStatusCode statusCode, out string message);
+            _charactersBLL.DeleteCharacter(id, out statusCode, out message);
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
@@ -243,12 +255,21 @@ namespace Demo_FileIO_NTier.PresentationLayer
 
             DisplayHeader("Update Character");
 
-            DisplayCharacterListTable();
+            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+
+            if (statusCode == MongoDbStatusCode.GOOD)
+            {
+                DisplayCharacterListTable(characters);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
 
             Console.Write("Enter Id of Character to Update:");
             int.TryParse(Console.ReadLine(), out int id);
 
-            character = _characters.FirstOrDefault(c => c.Id == id);
+            character = characters.FirstOrDefault(c => c.Id == id);
 
             if (character != null)
             {
@@ -289,21 +310,21 @@ namespace Demo_FileIO_NTier.PresentationLayer
                     Enum.TryParse(Console.ReadLine().ToUpper(), out Character.GenderType gender);
                     character.Gender = gender;
                 }
+
+                _charactersBLL.UpdateCharacter(character, out statusCode, out message);
+
+                if (statusCode == MongoDbStatusCode.GOOD)
+                {
+                    Console.WriteLine("Character updated.");
+                }
+                else
+                {
+                    Console.WriteLine(message);
+                }
             }
             else
             {
                 Console.WriteLine($"No character has id {id}.");
-            }
-
-            _charactersBLL.UpdateCharacter(character, out MongoDbStatusCode statusCode, out string message);
-
-            if (statusCode == MongoDbStatusCode.GOOD)
-            {
-                Console.WriteLine("Character updated.");
-            }
-            else
-            {
-                Console.WriteLine(message);
             }
 
             DisplayContinuePrompt();
@@ -319,38 +340,11 @@ namespace Demo_FileIO_NTier.PresentationLayer
             Console.WriteLine("Press any key to begin retrieving the data.");
             Console.ReadKey();
 
-            _characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> _characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
                 Console.WriteLine("Data retrieved.");
-            }
-            else
-            {
-                Console.WriteLine(message);
-            }
-
-            DisplayContinuePrompt();
-        }
-
-        /// <summary>
-        /// display save list of characters to data file (debug only)
-        /// </summary>
-        private void DisplaySaveCharactersToDataFile()
-        {
-            string message;
-
-            DisplayHeader("Save Characters to Data File (Debug Only)");
-
-            Console.WriteLine("Press any key to begin saving the data.");
-            Console.ReadKey();
-
-            _charactersBLL.SaveAllCharacters(_characters, out MongoDbStatusCode statusCode, out message);
-
-            if (statusCode == MongoDbStatusCode.GOOD)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Data saved.");
             }
             else
             {
@@ -378,9 +372,9 @@ namespace Demo_FileIO_NTier.PresentationLayer
         /// display a table with id and full name columns
         /// </summary>
         /// <param name="characters">characters</param>
-        private void DisplayCharacterListTable()
+        private void DisplayCharacterListTable(List<Character> characters)
         {
-            if (_characters != null)
+            if (characters != null)
             {
                 StringBuilder columnHeader = new StringBuilder();
 
@@ -389,9 +383,9 @@ namespace Demo_FileIO_NTier.PresentationLayer
 
                 Console.WriteLine(columnHeader.ToString());
 
-                _characters = _characters.OrderBy(c => c.Id).ToList();
+                characters = characters.OrderBy(c => c.Id).ToList();
 
-                foreach (Character character in _characters)
+                foreach (Character character in characters)
                 {
                     StringBuilder characterInfo = new StringBuilder();
 

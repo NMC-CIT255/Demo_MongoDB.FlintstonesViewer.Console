@@ -20,7 +20,8 @@ namespace Demo_FileIO_NTier
             // Required to test the MongoDB data service
             // refresh MongoDB collection 
             //
-            dataService.WriteAll(GenerateListOfCharacters(), out MongoDbStatusCode statusCode);
+            //dataService.WriteAll(GenerateListOfCharacters(), out MongoDbStatusCode statusCode);
+            MongoDbStatusCode statusCode = MongoDbStatusCode.GOOD;
 
             if (statusCode == MongoDbStatusCode.GOOD)
             {
