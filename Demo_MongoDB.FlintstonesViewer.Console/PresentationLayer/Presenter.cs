@@ -12,7 +12,6 @@ namespace Demo_FileIO_NTier.PresentationLayer
     class Presenter
     {
         static CharacterBLL _charactersBLL;
-        //static List<Character> _characters;
 
         public Presenter(CharacterBLL characterBLL)
         {
