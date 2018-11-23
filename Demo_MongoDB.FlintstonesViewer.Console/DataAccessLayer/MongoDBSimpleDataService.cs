@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-using Demo_FileIO_NTier.Models;
-using Newtonsoft;
-using Demo_FileIO_NTier.DataAccessLayer;
-using Newtonsoft.Json;
 using MongoDB.Driver;
 using MongoDB.Bson;
 
-namespace Demo_FileIO_NTier.DataAccessLayer
+namespace Demo_NTier_PresentationLayer
 
 {
     public class MongoDBSimpleDataService : IDataService

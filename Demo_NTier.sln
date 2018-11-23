@@ -3,9 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo_MongoDB.FlintstonesViewer.Console", "Demo_MongoDB.FlintstonesViewer.Console\Demo_MongoDB.FlintstonesViewer.Console.csproj", "{E5DA498E-39BF-4B07-AAD6-F03835E2D0AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo_NTier_PresentationLayer", "Demo_MongoDB.FlintstonesViewer.Console\Demo_NTier_PresentationLayer.csproj", "{E5DA498E-39BF-4B07-AAD6-F03835E2D0AF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{BD6349D2-5F38-4BB9-BF0D-72E326C7FF29}"
+	ProjectSection(SolutionItems) = preProject
+		Demo_MongoDB.FlintstonesViewer.Console\ReadMe.md = Demo_MongoDB.FlintstonesViewer.Console\ReadMe.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

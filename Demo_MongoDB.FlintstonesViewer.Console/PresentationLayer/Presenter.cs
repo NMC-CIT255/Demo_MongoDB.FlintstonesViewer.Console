@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Demo_FileIO_NTier.BusinessLogicLayer;
-using Demo_FileIO_NTier.Models;
 using System.Text;
 using System.Threading.Tasks;
-using Demo_FileIO_NTier.DataAccessLayer;
 
-namespace Demo_FileIO_NTier.PresentationLayer
+namespace Demo_NTier_PresentationLayer
 {
     class Presenter
     {
