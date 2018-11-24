@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Demo_NTier_PresentationLayer
+namespace Demo_NTier_DomainLayer
 {
-    public enum MongoDbStatusCode
+    public enum DalErrorCode
     {
         GOOD,
         ERROR

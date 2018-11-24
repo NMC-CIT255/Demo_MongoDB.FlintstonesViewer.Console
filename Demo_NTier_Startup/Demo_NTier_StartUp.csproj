@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5D541676-8AB1-4B9C-AF3C-522B17E8A815}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Demo_NTier_Startup</RootNamespace>
+    <AssemblyName>Demo_NTier_Startup</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Demo_NTier_BusinessLogicLayer\Demo_NTier_BusinessLogicLayer.csproj">
+      <Project>{3a3ba84c-4580-4e64-8826-7666ec1f6fa2}</Project>
+      <Name>Demo_NTier_BusinessLogicLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Demo_NTier_DataAccessLayer\Demo_NTier_DataAccessLayer.csproj">
+      <Project>{a2ebdf8c-5d88-4926-aed5-961a0d1e4db8}</Project>
+      <Name>Demo_NTier_DataAccessLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Demo_NTier_DomainLayer\Demo_NTier_DomainLayer.csproj">
+      <Project>{9cc769c8-e56d-4efa-a57f-4bac224b3d36}</Project>
+      <Name>Demo_NTier_DomainLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Demo_NTier_PresentationLayer\Demo_NTier_PresentationLayer.csproj">
+      <Project>{e5da498e-39bf-4b07-aad6-f03835e2d0af}</Project>
+      <Name>Demo_NTier_PresentationLayer</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

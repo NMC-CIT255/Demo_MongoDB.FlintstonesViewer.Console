@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Demo_NTier_DataAccessLayer;
+using Demo_NTier_DomainLayer;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace Demo_NTier_PresentationLayer
 {
-    class CharacterBLL
+    public class CharacterBLL
     {
-        IDataService _dataService;
+        ICharacterRepository _characterRepository;
         //List<Character> _characters;
 
-        public CharacterBLL(IDataService dataservice)
+        public CharacterBLL(ICharacterRepository characterRepository)
         {
-            _dataService = dataservice;
+            _characterRepository = characterRepository;
         }
 
         /// <summary>
@@ -23,22 +25,26 @@ namespace Demo_NTier_PresentationLayer
         /// <param name="statusCode">operation status</param>
         /// <param name="message">error message</param>
         /// <returns></returns>
-        public IEnumerable<Character> GetAllCharacters(out MongoDbStatusCode statusCode, out string message)
+        public IEnumerable<Character> GetAllCharacters(out DalErrorCode statusCode, out string message)
         {
             List<Character> characters = null;
             message = "";
-            characters = _dataService.ReadAll(out statusCode) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            using (_characterRepository)
             {
-                if (characters != null)
+                characters = _characterRepository.GetAll(out statusCode) as List<Character>;
+
+                if (statusCode == DalErrorCode.GOOD)
                 {
-                    characters.OrderBy(c => c.Id);
+                    if (characters != null)
+                    {
+                        characters.OrderBy(c => c.Id);
+                    }
                 }
-            }
-            else
-            {
-                message = "An error occurred connecting to the database.";
+                else
+                {
+                    message = "An error occurred connecting to the database.";
+                }
             }
 
             return characters;
@@ -51,21 +57,21 @@ namespace Demo_NTier_PresentationLayer
         /// <param name="statusCode">status code</param>
         /// <param name="message">message</param>
         /// <returns></returns>
-        public Character GetCharacterById(int id, out MongoDbStatusCode statusCode, out string message)
+        public Character GetCharacterById(int id, out DalErrorCode statusCode, out string message)
         {
             message = "";
             Character character = null;
 
-            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 character = characters.FirstOrDefault(c => c.Id == id);
 
                 if (character == null)
                 {
                     message = $"No character has id {id}.";
-                    statusCode = MongoDbStatusCode.ERROR;
+                    statusCode = DalErrorCode.ERROR;
                 }
             }
 
@@ -78,13 +84,13 @@ namespace Demo_NTier_PresentationLayer
         /// <param name="character">character</param>
         /// <param name="statusCode">status code</param>
         /// <param name="message">message</param>
-        public void AddCharacter(Character character, out MongoDbStatusCode statusCode, out string message)
+        public void AddCharacter(Character character, out DalErrorCode statusCode, out string message)
         {
             message = "";
 
-            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 if (characters != null)
                 {
@@ -92,9 +98,9 @@ namespace Demo_NTier_PresentationLayer
                 }
             }
 
-            _dataService.WriteAll(characters, out statusCode);
+            //_dataService.WriteAll(characters, out statusCode);
 
-            if (statusCode == MongoDbStatusCode.ERROR)
+            if (statusCode == DalErrorCode.ERROR)
             {
                 message = "There was an error connecting to the data file.";
             }
@@ -106,19 +112,19 @@ namespace Demo_NTier_PresentationLayer
         /// <param name="character">character</param>
         /// <param name="statusCode">status code</param>
         /// <param name="message">message</param>
-        internal void DeleteCharacter(int id, out MongoDbStatusCode statusCode, out string message)
+        public void DeleteCharacter(int id, out DalErrorCode statusCode, out string message)
         {
             message = "";
 
-            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 if (characters.Exists(c => c.Id == id))
                 {
                     characters.Remove(characters.FirstOrDefault(c => c.Id == id));
-                    _dataService.WriteAll(characters, out statusCode);
-                    if (statusCode == MongoDbStatusCode.ERROR)
+                    //_dataService.WriteAll(characters, out statusCode);
+                    if (statusCode == DalErrorCode.ERROR)
                     {
                         message = "There was an error connecting to the data file.";
                     }
@@ -126,7 +132,7 @@ namespace Demo_NTier_PresentationLayer
                 else
                 {
                     message = $"Character with id {id} does not exist.";
-                    statusCode = MongoDbStatusCode.ERROR;
+                    statusCode = DalErrorCode.ERROR;
                 }
             }
             else
@@ -141,13 +147,13 @@ namespace Demo_NTier_PresentationLayer
         /// <param name="character">character</param>
         /// <param name="statusCode">status code</param>
         /// <param name="message">message</param>
-        public void UpdateCharacter(Character character, out MongoDbStatusCode statusCode, out string message)
+        public void UpdateCharacter(Character character, out DalErrorCode statusCode, out string message)
         {
             message = "";
 
-            List<Character> characters = _dataService.ReadAll(out statusCode) as List<Character>;
+            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 if (characters != null)
                 {
@@ -155,8 +161,8 @@ namespace Demo_NTier_PresentationLayer
                     {
                         characters.Remove(characters.FirstOrDefault(c => c.Id == character.Id));
                         characters.Add(character);
-                        _dataService.WriteAll(characters, out statusCode);
-                        if (statusCode == MongoDbStatusCode.ERROR)
+                        //_dataService.WriteAll(characters, out statusCode);
+                        if (statusCode == DalErrorCode.ERROR)
                         {
                             message = "There was an error connecting to the data file.";
                         }
@@ -164,7 +170,7 @@ namespace Demo_NTier_PresentationLayer
                     else
                     {
                         message = "Unable to locate character in data file.";
-                        statusCode = MongoDbStatusCode.ERROR;
+                        statusCode = DalErrorCode.ERROR;
                     }
                 }
             }
@@ -174,9 +180,9 @@ namespace Demo_NTier_PresentationLayer
         {
             int nextIdNumber = 0;
 
-            List<Character> characters = _dataService.ReadAll(out MongoDbStatusCode statusCode) as List<Character>;
+            List<Character> characters = _characterRepository.GetAll(out DalErrorCode statusCode) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 nextIdNumber = characters.Max(c => c.Id) + 1;
             }

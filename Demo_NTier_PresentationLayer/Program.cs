@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Demo_NTier_DomainLayer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,28 +7,32 @@ using System.Threading.Tasks;
 
 namespace Demo_NTier_PresentationLayer
 {
+    //
+    // TODO: refactoring into multiple projects and this project needs to become
+    //       a C# .NET Framework Library
+    //
     class Program
     {
         static void Main(string[] args)
         {
-            IDataService dataService = new MongoDBSimpleDataService();
+            //IDataService dataService = new MongoDBSimpleDataService();
 
             //
             // Required to test the MongoDB data service
             // refresh MongoDB collection 
             //
             //dataService.WriteAll(GenerateListOfCharacters(), out MongoDbStatusCode statusCode);
-            MongoDbStatusCode statusCode = MongoDbStatusCode.GOOD;
+            //MongoDbStatusCode statusCode = MongoDbStatusCode.GOOD;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
-            {
-                CharacterBLL characterBLL = new CharacterBLL(dataService);
-                Presenter presenter = new Presenter(characterBLL);
-            }
-            else
-            {
-                Console.WriteLine("There was an error connecting to data file.");
-            }
+            //if (statusCode == MongoDbStatusCode.GOOD)
+            //{
+            //    CharacterBLL characterBLL = new CharacterBLL(dataService);
+            //    Presenter presenter = new Presenter(characterBLL);
+            //}
+            //else
+            //{
+            //    Console.WriteLine("There was an error connecting to data file.");
+            //}
         }
 
         private static List<Character> GenerateListOfCharacters()

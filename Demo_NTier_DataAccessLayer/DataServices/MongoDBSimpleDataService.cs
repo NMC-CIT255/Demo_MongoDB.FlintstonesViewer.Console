@@ -4,9 +4,9 @@ using System.IO;
 using System.Xml.Serialization;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using Demo_NTier_DomainLayer;
 
-namespace Demo_NTier_PresentationLayer
-
+namespace Demo_NTier_DataAccessLayer
 {
     public class MongoDBSimpleDataService : IDataService
     {
@@ -17,7 +17,7 @@ namespace Demo_NTier_PresentationLayer
         /// read the mongoDb collection and load a list of character objects
         /// </summary>
         /// <returns>list of characters</returns>
-        public IEnumerable<Character> ReadAll(out MongoDbStatusCode statusCode)
+        public IEnumerable<Character> ReadAll(out DalErrorCode statusCode)
         {
             List<Character> characters = new List<Character>();
 
@@ -29,11 +29,11 @@ namespace Demo_NTier_PresentationLayer
 
                 characters = characterList.Find(Builders<Character>.Filter.Empty).ToList();
 
-                statusCode = MongoDbStatusCode.GOOD;
+                statusCode = DalErrorCode.GOOD;
             }
             catch (Exception)
             {
-                statusCode = MongoDbStatusCode.ERROR;
+                statusCode = DalErrorCode.ERROR;
             }
 
             return characters;
@@ -43,7 +43,7 @@ namespace Demo_NTier_PresentationLayer
         /// write the current list of characters to the mongoDb collection
         /// </summary>
         /// <param name="characters">list of characters</param>
-        public void WriteAll(IEnumerable<Character> characters, out MongoDbStatusCode statusCode)
+        public void WriteAll(IEnumerable<Character> characters, out DalErrorCode statusCode)
         {
             try
             {
@@ -58,17 +58,17 @@ namespace Demo_NTier_PresentationLayer
 
                 characterList.InsertMany(characters);
 
-                statusCode = MongoDbStatusCode.GOOD;
+                statusCode = DalErrorCode.GOOD;
             }
             catch (Exception)
             {
-                statusCode = MongoDbStatusCode.ERROR;
+                statusCode = DalErrorCode.ERROR;
             }
         }
 
         public MongoDBSimpleDataService()
         {
-            _connectionString = DataSettings.connectionString;
+            _connectionString = MongoDbDataSettings.connectionString;
         }
     }
 }

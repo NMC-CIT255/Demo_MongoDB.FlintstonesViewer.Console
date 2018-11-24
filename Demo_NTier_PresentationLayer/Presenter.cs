@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Demo_NTier_DomainLayer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Demo_NTier_PresentationLayer
 {
-    class Presenter
+    public class Presenter
     {
         static CharacterBLL _charactersBLL;
 
@@ -108,9 +109,9 @@ namespace Demo_NTier_PresentationLayer
         {
             DisplayHeader("List of Characters");
 
-            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> characters = _charactersBLL.GetAllCharacters(out DalErrorCode statusCode, out string message) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 DisplayCharacterListTable(characters);
             }
@@ -131,9 +132,9 @@ namespace Demo_NTier_PresentationLayer
 
             DisplayHeader("Character Detail");
 
-            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> characters = _charactersBLL.GetAllCharacters(out DalErrorCode statusCode, out string message) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 DisplayCharacterListTable(characters);
             }
@@ -147,7 +148,7 @@ namespace Demo_NTier_PresentationLayer
 
             character = _charactersBLL.GetCharacterById(id, out statusCode, out message);
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 DisplayHeader("Character Detail");
                 DisplayCharacterDetailTable(character);
@@ -191,9 +192,9 @@ namespace Demo_NTier_PresentationLayer
             Console.WriteLine($"\tAge: {character.Age}");
             Console.WriteLine($"\tGender: {character.Gender}");
 
-            _charactersBLL.AddCharacter(character, out MongoDbStatusCode statusCode, out string message);
+            _charactersBLL.AddCharacter(character, out DalErrorCode statusCode, out string message);
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 Console.WriteLine();
                 Console.WriteLine("Character Added");
@@ -213,9 +214,9 @@ namespace Demo_NTier_PresentationLayer
         {
             DisplayHeader("Delete Character");
 
-            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> characters = _charactersBLL.GetAllCharacters(out DalErrorCode statusCode, out string message) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 DisplayCharacterListTable(characters);
             }
@@ -229,7 +230,7 @@ namespace Demo_NTier_PresentationLayer
 
             _charactersBLL.DeleteCharacter(id, out statusCode, out message);
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 Console.WriteLine("Character deleted.");
             }
@@ -251,9 +252,9 @@ namespace Demo_NTier_PresentationLayer
 
             DisplayHeader("Update Character");
 
-            List<Character> characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> characters = _charactersBLL.GetAllCharacters(out DalErrorCode statusCode, out string message) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 DisplayCharacterListTable(characters);
             }
@@ -288,14 +289,14 @@ namespace Demo_NTier_PresentationLayer
                 userResponse = Console.ReadLine();
                 if (userResponse != "")
                 {
-                    character.LastName = Console.ReadLine();
+                    character.LastName = userResponse;
                 }
 
                 Console.Write("Enter Age:");
                 userResponse = Console.ReadLine();
                 if (userResponse != "")
                 {
-                    int.TryParse(Console.ReadLine(), out int age);
+                    int.TryParse(userResponse, out int age);
                     character.Age = age;
                 }
 
@@ -303,13 +304,13 @@ namespace Demo_NTier_PresentationLayer
                 userResponse = Console.ReadLine();
                 if (userResponse != "")
                 {
-                    Enum.TryParse(Console.ReadLine().ToUpper(), out Character.GenderType gender);
+                    Enum.TryParse(userResponse.ToUpper(), out Character.GenderType gender);
                     character.Gender = gender;
                 }
 
                 _charactersBLL.UpdateCharacter(character, out statusCode, out message);
 
-                if (statusCode == MongoDbStatusCode.GOOD)
+                if (statusCode == DalErrorCode.GOOD)
                 {
                     Console.WriteLine("Character updated.");
                 }
@@ -336,9 +337,9 @@ namespace Demo_NTier_PresentationLayer
             Console.WriteLine("Press any key to begin retrieving the data.");
             Console.ReadKey();
 
-            List<Character> _characters = _charactersBLL.GetAllCharacters(out MongoDbStatusCode statusCode, out string message) as List<Character>;
+            List<Character> _characters = _charactersBLL.GetAllCharacters(out DalErrorCode statusCode, out string message) as List<Character>;
 
-            if (statusCode == MongoDbStatusCode.GOOD)
+            if (statusCode == DalErrorCode.GOOD)
             {
                 Console.WriteLine("Data retrieved.");
             }
