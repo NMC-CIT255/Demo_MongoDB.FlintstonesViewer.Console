@@ -21,11 +21,9 @@ namespace Demo_NTier_DataAccessLayer
         {
             try
             {
-                var client = new MongoClient(MongoDbDataSettings.connectionString);
-                IMongoDatabase database = client.GetDatabase(MongoDbDataSettings.databaseName);
-                IMongoCollection<Character> characterList = database.GetCollection<Character>(MongoDbDataSettings.characterCollectionName);
+                var characterCollection = GetCharacterColletion();
 
-                _characters = characterList.Find(Builders<Character>.Filter.Empty).ToList();
+                _characters = characterCollection.Find(Builders<Character>.Filter.Empty).ToList();
 
                 dalErrorCode = DalErrorCode.GOOD;
             }
@@ -39,22 +37,80 @@ namespace Demo_NTier_DataAccessLayer
 
         public Character GetById(int id, out DalErrorCode dalErrorCode)
         {
-            throw new NotImplementedException();
+            Character character = null;
+
+            try
+            {
+                var characterCollection = GetCharacterColletion();
+
+                character = characterCollection.Find(Builders<Character>.Filter.Eq("Id", id)).SingleOrDefault() as Character;
+
+                dalErrorCode = DalErrorCode.GOOD;
+            }
+            catch (Exception)
+            {
+                dalErrorCode = DalErrorCode.ERROR;
+            }
+
+            return character; ;
         }
 
         public void Insert(Character character, out DalErrorCode dalErrorCode)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var characterCollection = GetCharacterColletion();
+
+                characterCollection.InsertOne(character);
+
+                dalErrorCode = DalErrorCode.GOOD;
+            }
+            catch (Exception)
+            {
+                dalErrorCode = DalErrorCode.ERROR;
+            }
         }
 
         public void Update(Character character, out DalErrorCode dalErrorCode)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var characterCollection = GetCharacterColletion();
+
+                //characterList.Find(Builders<Character>.Filter.Eq("id", character.Id)). UpdateOne;
+                characterCollection.FindOneAndReplace(Builders<Character>.Filter.Eq("Id", character.Id), character);
+
+                dalErrorCode = DalErrorCode.GOOD;
+            }
+            catch (Exception)
+            {
+                dalErrorCode = DalErrorCode.ERROR;
+            }
         }
 
         public void Delete(int id, out DalErrorCode dalErrorCode)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var characterCollection = GetCharacterColletion();
+
+                var result = characterCollection.DeleteOne(Builders<Character>.Filter.Eq("Id", id));
+
+                dalErrorCode = DalErrorCode.GOOD;
+            }
+            catch (Exception)
+            {
+                dalErrorCode = DalErrorCode.ERROR;
+            }
+        }
+
+        private IMongoCollection<Character> GetCharacterColletion()
+        {
+            var client = new MongoClient(MongoDbDataSettings.connectionString);
+            IMongoDatabase database = client.GetDatabase(MongoDbDataSettings.databaseName);
+            IMongoCollection<Character> characterCollection = database.GetCollection<Character>(MongoDbDataSettings.characterCollectionName);
+
+            return characterCollection;
         }
 
         public void Dispose()

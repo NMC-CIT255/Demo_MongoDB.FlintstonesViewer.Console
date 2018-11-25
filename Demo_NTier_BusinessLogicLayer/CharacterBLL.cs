@@ -12,7 +12,6 @@ namespace Demo_NTier_PresentationLayer
     public class CharacterBLL
     {
         ICharacterRepository _characterRepository;
-        //List<Character> _characters;
 
         public CharacterBLL(ICharacterRepository characterRepository)
         {
@@ -22,19 +21,19 @@ namespace Demo_NTier_PresentationLayer
         /// <summary>
         /// get IEnumberable of all characters sorted by Id
         /// </summary>
-        /// <param name="statusCode">operation status</param>
+        /// <param name="dalErrorCode">DAL error code</param>
         /// <param name="message">error message</param>
         /// <returns></returns>
-        public IEnumerable<Character> GetAllCharacters(out DalErrorCode statusCode, out string message)
+        public IEnumerable<Character> GetAllCharacters(out DalErrorCode dalErrorCode, out string message)
         {
             List<Character> characters = null;
             message = "";
 
             using (_characterRepository)
             {
-                characters = _characterRepository.GetAll(out statusCode) as List<Character>;
+                characters = _characterRepository.GetAll(out dalErrorCode) as List<Character>;
 
-                if (statusCode == DalErrorCode.GOOD)
+                if (dalErrorCode == DalErrorCode.GOOD)
                 {
                     if (characters != null)
                     {
@@ -54,24 +53,29 @@ namespace Demo_NTier_PresentationLayer
         /// get character by id
         /// </summary>
         /// <param name="id">id</param>
-        /// <param name="statusCode">status code</param>
+        /// <param name="dalErrorCode">DAL error code</param>
         /// <param name="message">message</param>
         /// <returns></returns>
-        public Character GetCharacterById(int id, out DalErrorCode statusCode, out string message)
+        public Character GetCharacterById(int id, out DalErrorCode dalErrorCode, out string message)
         {
             message = "";
-            Character character = null;
+            Character character;
 
-            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
-
-            if (statusCode == DalErrorCode.GOOD)
+            using (_characterRepository)
             {
-                character = characters.FirstOrDefault(c => c.Id == id);
+                character = _characterRepository.GetById(id, out dalErrorCode);
 
-                if (character == null)
+                if (dalErrorCode == DalErrorCode.GOOD)
                 {
-                    message = $"No character has id {id}.";
-                    statusCode = DalErrorCode.ERROR;
+                    if (character == null)
+                    {
+                        message = $"No character has id {id}.";
+                        dalErrorCode = DalErrorCode.ERROR;
+                    }
+                }
+                else
+                {
+                    message = "An error occurred connecting to the database.";
                 }
             }
 
@@ -82,25 +86,15 @@ namespace Demo_NTier_PresentationLayer
         /// add a character to the data file
         /// </summary>
         /// <param name="character">character</param>
-        /// <param name="statusCode">status code</param>
+        /// <param name="dalErrorCode">DAL error code</param>
         /// <param name="message">message</param>
-        public void AddCharacter(Character character, out DalErrorCode statusCode, out string message)
+        public void AddCharacter(Character character, out DalErrorCode dalErrorCode, out string message)
         {
             message = "";
 
-            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
+            _characterRepository.Insert(character, out dalErrorCode);
 
-            if (statusCode == DalErrorCode.GOOD)
-            {
-                if (characters != null)
-                {
-                    characters.Add(character);
-                }
-            }
-
-            //_dataService.WriteAll(characters, out statusCode);
-
-            if (statusCode == DalErrorCode.ERROR)
+            if (dalErrorCode == DalErrorCode.ERROR)
             {
                 message = "There was an error connecting to the data file.";
             }
@@ -110,21 +104,19 @@ namespace Demo_NTier_PresentationLayer
         /// delete a character from the data file
         /// </summary>
         /// <param name="character">character</param>
-        /// <param name="statusCode">status code</param>
+        /// <param name="dalErrorCode">status code</param>
         /// <param name="message">message</param>
-        public void DeleteCharacter(int id, out DalErrorCode statusCode, out string message)
+        public void DeleteCharacter(int id, out DalErrorCode dalErrorCode, out string message)
         {
             message = "";
 
-            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
-
-            if (statusCode == DalErrorCode.GOOD)
+            using (_characterRepository)
             {
-                if (characters.Exists(c => c.Id == id))
+                if (CharacterDocumentExists(id, out dalErrorCode))
                 {
-                    characters.Remove(characters.FirstOrDefault(c => c.Id == id));
-                    //_dataService.WriteAll(characters, out statusCode);
-                    if (statusCode == DalErrorCode.ERROR)
+                    _characterRepository.Delete(id, out dalErrorCode);
+
+                    if (dalErrorCode == DalErrorCode.ERROR)
                     {
                         message = "There was an error connecting to the data file.";
                     }
@@ -132,12 +124,24 @@ namespace Demo_NTier_PresentationLayer
                 else
                 {
                     message = $"Character with id {id} does not exist.";
-                    statusCode = DalErrorCode.ERROR;
+                    dalErrorCode = DalErrorCode.ERROR;
                 }
             }
-            else
+        }
+
+        private bool CharacterDocumentExists(int id, out DalErrorCode dalErrorCode)
+        {
+            using (_characterRepository)
             {
-                message = "There was an error connecting to the data file.";
+                if (_characterRepository.GetById(id, out dalErrorCode) != null)
+                {
+                    return true;
+                }
+                else
+                {
+                    dalErrorCode = DalErrorCode.ERROR;
+                    return false;
+                }
             }
         }
 
@@ -145,33 +149,27 @@ namespace Demo_NTier_PresentationLayer
         /// update a character in the data file
         /// </summary>
         /// <param name="character">character</param>
-        /// <param name="statusCode">status code</param>
+        /// <param name="dalErrorCode">status code</param>
         /// <param name="message">message</param>
-        public void UpdateCharacter(Character character, out DalErrorCode statusCode, out string message)
+        public void UpdateCharacter(Character character, out DalErrorCode dalErrorCode, out string message)
         {
             message = "";
 
-            List<Character> characters = _characterRepository.GetAll(out statusCode) as List<Character>;
-
-            if (statusCode == DalErrorCode.GOOD)
+            using (_characterRepository)
             {
-                if (characters != null)
+                if (CharacterDocumentExists(character.Id, out dalErrorCode))
                 {
-                    if (characters.Exists(c => c.Id == character.Id))
+                    _characterRepository.Update(character, out dalErrorCode);
+
+                    if (dalErrorCode == DalErrorCode.ERROR)
                     {
-                        characters.Remove(characters.FirstOrDefault(c => c.Id == character.Id));
-                        characters.Add(character);
-                        //_dataService.WriteAll(characters, out statusCode);
-                        if (statusCode == DalErrorCode.ERROR)
-                        {
-                            message = "There was an error connecting to the data file.";
-                        }
+                        message = "There was an error connecting to the data file.";
                     }
-                    else
-                    {
-                        message = "Unable to locate character in data file.";
-                        statusCode = DalErrorCode.ERROR;
-                    }
+                }
+                else
+                {
+                    message = $"Character with id {character.Id} does not exist.";
+                    dalErrorCode = DalErrorCode.ERROR;
                 }
             }
         }
