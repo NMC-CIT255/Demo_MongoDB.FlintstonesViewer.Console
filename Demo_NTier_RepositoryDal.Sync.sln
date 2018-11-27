@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo_NTier_PresentationLaye
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{BD6349D2-5F38-4BB9-BF0D-72E326C7FF29}"
 	ProjectSection(SolutionItems) = preProject
-		ReadMe.txt = ReadMe.txt
+		ReadMe.md = ReadMe.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo_NTier_DataAccessLayer", "Demo_NTier_DataAccessLayer\Demo_NTier_DataAccessLayer.csproj", "{A2EBDF8C-5D88-4926-AED5-961A0D1E4DB8}"

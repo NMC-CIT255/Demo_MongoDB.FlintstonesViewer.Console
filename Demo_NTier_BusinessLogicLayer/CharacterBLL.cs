@@ -174,6 +174,10 @@ namespace Demo_NTier_PresentationLayer
             }
         }
 
+        /// <summary>
+        /// generate the next id increment
+        /// </summary>
+        /// <returns>id value</returns>
         public int NextIdNumber()
         {
             int nextIdNumber = 0;

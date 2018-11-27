@@ -23,7 +23,7 @@ namespace Demo_NTier_DataAccessLayer
             {
                 var characterCollection = GetCharacterColletion();
 
-                _characters = characterCollection.Find(Builders<Character>.Filter.Empty).ToList();
+                _characters = characterCollection.FindSync(Builders<Character>.Filter.Empty).ToList();
 
                 dalErrorCode = DalErrorCode.GOOD;
             }
